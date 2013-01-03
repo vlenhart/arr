@@ -1,0 +1,110 @@
+<body></body>
+<script>
+
+function range(from, to, step) {
+  var arr = [];
+  if(!to) { to = from; from = 0; }
+  if(!step) step = 1;
+  for (var i = from; i < to; i += step) {
+    arr.push(i);
+  }
+  return arr;
+}
+
+function each(arr, fn) {
+  for (var i = 0; i < arr.length; i++) {
+    fn(arr[i]);
+  }
+}
+
+function map(arr, fn) {
+  for (var i = 0; i < arr.length; i++) {
+    arr[i] = fn(arr[i]);
+  }
+  return arr;
+}
+
+function cond() {
+  for (var i = 0; i < arguments.length; i++) {
+    var a = arguments[i];
+    var condition = a[0];
+    var result = a[1];
+    if(condition) return result;
+  };
+}
+
+function eq(a, b) {
+  return a === b;
+}
+
+function mod(a, b) {
+  return a % b;
+}
+
+function print(str) {
+  document.writeln(str+'<br />');
+}
+
+function lambda() {
+  var environment = this;
+  var argNames = Array.prototype.slice.call(arguments, 0, arguments.length-1);
+  var array = arguments[arguments.length-1];
+
+  return function() {
+    // add arguments to the environment
+    // FIXME: only add them to the local environment
+    for (var i = 0; i < argNames.length; i++) {
+      environment[argNames[i]] = arguments[i];
+    }
+
+    return arr(environment, array);
+  };
+}
+
+function arr(environment, array) {
+  if(!array) {
+    array = environment;
+    environment = {};
+  }
+
+  array = array.map(function(value) {
+    if(value instanceof Array) {
+      if(array[0] != lambda) { // do not evaluate the body of a lambda expression (yet)
+        value = arr(environment, value);
+      }
+    }
+    if(typeof value == 'string') {
+      try {
+        with(environment) {
+          value = eval(value);
+        }
+      } catch(e) {}
+    }
+    return value;
+  });
+
+  var first = array[0];
+  if(typeof first != 'function') return array;
+  var rest = array.slice(1);
+  return first.apply(environment, rest);
+}
+
+var fizzbuzz =
+ [each,
+    [map,
+      [range, 1, 101],
+      [lambda, 'number',
+        [cond,
+          [[eq, [mod, 'number', 15], 0], 'FizzBuzz'],
+          [[eq, [mod, 'number',  3], 0], 'Fizz'],
+          [[eq, [mod, 'number',  5], 0], 'Buzz'],
+          [true, 'number']
+        ]
+      ]
+    ],
+    print
+  ];
+
+arr(fizzbuzz);
+
+</script>
