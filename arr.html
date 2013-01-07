@@ -1,36 +1,14 @@
-<body></body>
+<html>
+  <head>
+    <title></title>
+    <script type="text/javascript" src="underscore.js"></script>
+  </head>
+  <body></body>
 <script>
 
-function range(from, to, step) {
-  var arr = [];
-  if(!to) { to = from; from = 0; }
-  if(!step) step = 1;
-  for (var i = from; i < to; i += step) {
-    arr.push(i);
-  }
-  return arr;
-}
-
-function each(arr, fn) {
-  for (var i = 0; i < arr.length; i++) {
-    fn(arr[i]);
-  }
-}
-
-function map(arr, fn) {
-  for (var i = 0; i < arr.length; i++) {
-    arr[i] = fn(arr[i]);
-  }
-  return arr;
-}
-
 function cond() {
-  for (var i = 0; i < arguments.length; i++) {
-    var a = arguments[i];
-    var condition = a[0];
-    var result = a[1];
-    if(condition) return result;
-  };
+  var resultClause = _.find(arguments, function(clause) { return clause[0]; });
+  return resultClause[1];
 }
 
 function eq(a, b) {
@@ -47,15 +25,14 @@ function print(str) {
 
 function lambda() {
   var environment = this;
-  var argNames = Array.prototype.slice.call(arguments, 0, arguments.length-1);
-  var array = arguments[arguments.length-1];
+  var argNames = _.initial(arguments);
+  var array = _.last(arguments);
 
   return function() {
     // add arguments to the environment
     // FIXME: only add them to the local environment
-    for (var i = 0; i < argNames.length; i++) {
-      environment[argNames[i]] = arguments[i];
-    }
+    var args = _.object(argNames, arguments);
+    _.extend(environment, args);
 
     return arr(environment, array);
   };
@@ -67,13 +44,14 @@ function arr(environment, array) {
     environment = {};
   }
 
-  array = array.map(function(value) {
+  array = _.map(array, function(value) {
     if(value instanceof Array) {
       if(array[0] != lambda) { // do not evaluate the body of a lambda expression (yet)
         value = arr(environment, value);
       }
     }
     if(typeof value == 'string') {
+      // TODO: optimization: lookup string in environment first
       try {
         with(environment) {
           value = eval(value);
@@ -83,13 +61,17 @@ function arr(environment, array) {
     return value;
   });
 
-  var first = array[0];
+  var first = _.first(array);
   if(typeof first != 'function') return array;
-  var rest = array.slice(1);
+  var rest = _.rest(array);
   return first.apply(environment, rest);
 }
 
-var fizzbuzz =
+var each = _.each;
+var map = _.map;
+var range = _.range;
+
+arr(
  [each,
     [map,
       [range, 1, 101],
@@ -103,8 +85,8 @@ var fizzbuzz =
       ]
     ],
     print
-  ];
-
-arr(fizzbuzz);
+  ]
+);
 
 </script>
+</html>
