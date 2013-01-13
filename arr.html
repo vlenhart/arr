@@ -7,8 +7,11 @@
 <script>
 
 function cond() {
-  var resultClause = _.find(arguments, function(clause) { return clause[0]; });
-  return resultClause[1];
+  var environment = this;
+  var resultClause = _.find(arguments, function(clause) {
+    return arr(environment, clause[0]);
+  });
+  return arr(environment, resultClause[1]);
 }
 
 function eq(a, b) {
@@ -43,7 +46,7 @@ function arr(environment, array) {
     environment = {};
   }
   if(array instanceof Array) {
-    if(array[0] != lambda && array[0] != defun) { // do not evaluate the body of a lambda expression (yet)
+    if(array[0] != lambda && array[0] != defun && array[0] != cond) { // do not evaluate the body of a lambda expression (yet)
       array = _.map(array, function(value) {
         return arr(environment, value);
       });
