@@ -43,28 +43,35 @@ function arr(environment, array) {
     array = environment;
     environment = {};
   }
-
-  array = _.map(array, function(value) {
-    if(value instanceof Array) {
-      if(array[0] != lambda) { // do not evaluate the body of a lambda expression (yet)
-        value = arr(environment, value);
+  if(array instanceof Array) {
+    if(array[0] != lambda && array[0] != defun) { // do not evaluate the body of a lambda expression (yet)
+      array = _.map(array, function(value) {
+        return arr(environment, value);
+      });
+    }
+  } else if(typeof array == 'string') {
+    try {
+      // XXX: does this make the variables immutable?
+      with(environment) {
+        array = eval(array);
       }
-    }
-    if(typeof value == 'string') {
-      // TODO: optimization: lookup string in environment first
-      try {
-        with(environment) {
-          value = eval(value);
-        }
-      } catch(e) {}
-    }
-    return value;
-  });
+    } catch(e) {}
+  }
 
   var first = _.first(array);
-  if(typeof first != 'function') return array;
-  var rest = _.rest(array);
-  return first.apply(environment, rest);
+
+  if(typeof first == 'string') {
+    if(environment[first]) {
+      first = environment[first];
+    } else {
+      return array;
+    }
+  }
+  if(typeof first == 'function') {
+    var rest = _.rest(array);
+    return first.apply(environment, rest);
+  }
+  return array;
 }
 
 var each = _.each;
