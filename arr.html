@@ -39,7 +39,7 @@ function lambda() {
 }
 
 function arr(environment, array) {
-  if(!array) {
+  if(typeof array == 'undefined') {
     array = environment;
     environment = {};
   }
