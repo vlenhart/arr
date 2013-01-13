@@ -29,12 +29,11 @@ function lambda() {
   var array = _.last(arguments);
 
   return function() {
-    // add arguments to the environment
-    // FIXME: only add them to the local environment
+    // add arguments to the local environment
+    var localEnvironment = _.clone(environment);
     var args = _.object(argNames, arguments);
-    _.extend(environment, args);
-
-    return arr(environment, array);
+    _.extend(localEnvironment, args);
+    return arr(localEnvironment, array);
   };
 }
 
