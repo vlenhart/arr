@@ -52,10 +52,14 @@ function arr(environment, array) {
       });
     }
   } else if(typeof array == 'string') {
+    // return empty strings
+    if(array=='') return array;
+    // lookup string in environment
+    if(environment[array]) return environment[array];
+    // fallback to eval
     try {
-      // XXX: does this make the variables immutable?
       with(environment) {
-        array = eval(array);
+        return eval(array);
       }
     } catch(e) {}
   }
