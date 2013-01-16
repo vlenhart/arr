@@ -1,11 +1,143 @@
 describe("arr", function() {
-  var environment = {};
+  // several examples taken from the holy text (SICP)
+  // http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-4.html
+
+  it("allows me to evaluate all programs from sicp chapter 1.1.1 Expressions", function() {
+    var environment = {};
+
+    var expression = 486;
+    var expectedResult = 486;
+    var actualResult = arr(environment, expression);
+    expect(environment).toEqual({});
+    expect(actualResult).toEqual(expectedResult);
+    
+    expression = [add, 137, 349];
+    expectedResult = 486;
+    actualResult = arr(environment, expression);
+    expect(environment).toEqual({});
+    expect(actualResult).toEqual(expectedResult);
+
+    expression = [sub, 1000, 334];
+    expectedResult = 666;
+    actualResult = arr(environment, expression);
+    expect(environment).toEqual({});
+    expect(actualResult).toEqual(expectedResult);
+
+    expression = [mul, 5, 99];
+    expectedResult = 495;
+    actualResult = arr(environment, expression);
+    expect(environment).toEqual({});
+    expect(actualResult).toEqual(expectedResult);
+
+    expression = [div, 10, 5];
+    expectedResult = 2;
+    actualResult = arr(environment, expression);
+    expect(environment).toEqual({});
+    expect(actualResult).toEqual(expectedResult);
+
+    expression = [add, 2.7, 10];
+    expectedResult = 12.7;
+    actualResult = arr(environment, expression);
+    expect(environment).toEqual({});
+    expect(actualResult).toEqual(expectedResult);
+  });
+
+  it("allows me to evaluate all programs from sicp chapter 1.1.2 Naming and the Environment", function() {
+    var environment = {};
+
+    var expression = [define, 'size', 2];
+    var result = arr(environment, expression);
+    expect(environment.size).toEqual(2);
+
+    expression = [mul, 5, 'size'];
+    var expectedResult = 10;
+    var actualResult = arr(environment, expression);
+    expect(actualResult).toEqual(expectedResult);
+
+    expression = [define, 'pi', 3.14159];
+    result = arr(environment, expression);
+    expect(environment.pi).toEqual(3.14159);
+
+    expression = [define, 'radius', 10];
+    result = arr(environment, expression);
+    expect(environment.radius).toEqual(10);
+
+    expression = [mul, 'pi', [mul, 'radius', 'radius']];
+    expectedResult = 314.159;
+    actualResult = arr(environment, expression);
+    expect(actualResult).toEqual(expectedResult);
+
+    expression = [define, 'circumference', [mul, 2, 'pi', 'radius']];
+    result = arr(environment, expression);
+    expect(environment.circumference).toEqual(62.8318);
+  });
+
+  it("allows me to evaluate all programs from sicp chapter 1.1.3 Evaluating Combinations", function() {
+    var environment = {};
+
+    var expression =
+      [mul,
+        [add, 2,
+          [mul, 4, 6]],
+        [add, 3, 5, 7]];
+    var expectedResult = 390;
+    var actualResult = arr(environment, expression);
+    expect(actualResult).toEqual(expectedResult);
+  });
+
+  it("allows me to evaluate all programs from sicp chapter 1.1.4 Compound Procedures", function() {
+    var environment = {};
+
+    var expression =
+      [define, ['square', 'x'],
+        [mul, 'x', 'x']];
+    var result = arr(environment, expression);
+    expect(environment.square).toEqual(jasmine.any(Function));
+
+    expression = ['square', 21];
+    var expectedResult = 441;
+    var actualResult = arr(environment, expression);
+    expect(actualResult).toEqual(expectedResult);
+
+    expression = ['square', [add, 2, 5]];
+    expectedResult = 49;
+    actualResult = arr(environment, expression);
+    expect(actualResult).toEqual(expectedResult);
+
+    expression = ['square', ['square', 3]];
+    expectedResult = 81;
+    actualResult = arr(environment, expression);
+    expect(actualResult).toEqual(expectedResult);
+
+    expression =
+      [define, ['sum-of-squares', 'x', 'y']
+        [add, ['square', 'x'], ['square', 'y']]];
+    result = arr(environment, expression);
+    expect(environment.square).toEqual(jasmine.any(Function));
+
+    expression = ['sum-of-squares', 3, 4];
+    expectedResult = 25;
+    actualResult = arr(environment, expression);
+    expect(actualResult).toEqual(expectedResult);
+
+    expression =
+      [define, ['f', 'a']
+        ['sum-of-squares', [add, 'a', 1], [mul, 'a', 2]]];
+    result = arr(environment, expression);
+    expect(environment.square).toEqual(jasmine.any(Function));
+
+    expression = ['f', 5];
+    expectedResult = 136;
+    actualResult = arr(environment, expression);
+    expect(actualResult).toEqual(expectedResult);
+  });
 
   it("should be able to do FizzBuzz", function() {
+    var environment = {};
     var toTest = arr(environment,
       [map,
         [range, 1, 101],
-        [lambda, 'number',
+        [lambda, ['number'],
           [cond,
             [[eq, [mod, 'number', 15], 0], 'FizzBuzz'],
             [[eq, [mod, 'number',  3], 0], 'Fizz'],
@@ -24,10 +156,11 @@ describe("arr", function() {
   });
 
   it("should be able to use basic math", function() {
+    var environment = {};
     var toTest = arr(environment,
       [map,
         [range, 10],
-        [lambda, 'n',
+        [lambda, ['n'],
           [mul, 'n', 'n', 'n']]]
     );
 
@@ -38,8 +171,9 @@ describe("arr", function() {
   });
 
   it("should be able to reverse strings", function() {
+    var environment = {};
     var stringReverse = arr(environment,
-      [defun, 'reverse', 'original', 'reversed',
+      [define, ['reverse', 'original', 'reversed'],
         [cond,
           [[not, 'reversed'], ['reverse', 'original', '']],
           [[not, 'original'], 'reversed'],

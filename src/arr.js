@@ -1,3 +1,37 @@
+// basic math functions
+
+function add() {
+  return _.reduce(arguments, function(a,b) {
+    return a+b;
+  });
+}
+
+function sub() {
+  return _.reduce(arguments, function(a,b) {
+    return a-b;
+  });
+}
+
+function mul() {
+  return _.reduce(arguments, function(a,b) {
+    return a*b;
+  });
+}
+
+function div() {
+  return _.reduce(arguments, function(a,b) {
+    return a/b;
+  });
+}
+
+function mod() {
+  return _.reduce(arguments, function(a,b) {
+    return a % b;
+  });
+}
+
+// core functions
+
 function cond() {
   var environment = this;
   var resultClause = _.find(arguments, function(clause) {
@@ -6,30 +40,28 @@ function cond() {
   return arr(environment, resultClause[1]);
 }
 
-function eq(a, b) {
-  return a === b;
-}
-
-function mod(a, b) {
-  return a % b;
-}
-
-function print(str) {
-  document.writeln(str+'<br />');
-}
-
-function lambda() {
+function define(name, body) {
   var environment = this;
-  var argNames = _.initial(arguments);
-  var array = _.last(arguments);
+
+  if(name instanceof Array) {
+    var argNames = _.rest(name);
+    name = _.first(name);
+
+    return environment[name] = lambda.call(environment, argNames, body);
+  } else {
+    return environment[name] = arr.call(environment, body);
+  }
+}
+
+function lambda(names, body) {
+  var environment = this;
 
   return function() {
     // add arguments to the local environment
     var localEnvironment = _.clone(environment);
-    var args = _.object(argNames, arguments);
+    var args = _.object(names, arguments);
     _.extend(localEnvironment, args);
-    debugger;
-    return arr(localEnvironment, array);
+    return arr(localEnvironment, body);
   };
 }
 
@@ -39,7 +71,7 @@ function arr(environment, array) {
     environment = {};
   }
   if(array instanceof Array) {
-    if(array[0] != lambda && array[0] != defun && array[0] != cond) { // do not evaluate the body of a lambda expression (yet)
+    if(array[0] != lambda && array[0] != cond) { // do not evaluate the body of a lambda expression (yet)
       array = _.map(array, function(value) {
         return arr(environment, value);
       });
@@ -69,22 +101,20 @@ function arr(environment, array) {
   return array;
 }
 
+// misc functions
+
 var each = _.each;
 var map = _.map;
 var range = _.range;
 
-function mul() {
-  return _.reduce(arguments, function(a,b) {
-    return a*b;
-  });
+function eq(a, b) {
+  return a === b;
 }
 
-function defun() {
-  var environment = this;
-  var functionName = arguments[0];
-  var restArgs = Array.prototype.slice.call(arguments, 1, arguments.length);
-  return environment[functionName] = lambda.apply(environment, restArgs);
+function print(str) {
+  document.writeln(str+'<br />');
 }
+
 
 var first = _.first;
 var last  = _.last;
