@@ -147,12 +147,23 @@ describe("arr", function() {
       expect(environment.abs(i)).toEqual(Math.abs(i));
     };
 
-    var expression =
+    expression =
       [define, ['abs', 'x'],
         [cond,
           [[lt, 'x', 0], [neg, 'x']],
           ['else', 'x']]];
-    var result = arr(environment, expression);
+    result = arr(environment, expression);
+    expect(environment.abs).toEqual(jasmine.any(Function));
+    for (var i = -5; i <= 5; i++) {
+      expect(environment.abs(i)).toEqual(Math.abs(i));
+    };
+
+    expression =
+      [define, ['abs', 'x'],
+        [iff, [lt, 'x', 0],
+            [neg, 'x'],
+            'x']];
+    result = arr(environment, expression);
     expect(environment.abs).toEqual(jasmine.any(Function));
     for (var i = -5; i <= 5; i++) {
       expect(environment.abs(i)).toEqual(Math.abs(i));
@@ -202,8 +213,8 @@ describe("arr", function() {
     var stringReverse = arr(environment,
       [define, ['reverse', 'original', 'reversed'],
         [cond,
-          [[not, 'reversed'], ['reverse', 'original', '']],
-          [[not, 'original'], 'reversed'],
+          [[eq, 'reversed', undefined], ['reverse', 'original', '']],
+          [[eq, [length, 'original'], 0], 'reversed'],
           [true, ['reverse',
             [butlast, 'original', 1],
             [append, 'reversed', [last, 'original', 1]]]]

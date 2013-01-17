@@ -48,7 +48,25 @@ function gt(a, b) {
   return a > b;
 }
 
+// logic functions
+
+function not(a) {
+  return !a;
+}
+
+function and(a, b) {
+  return a && b;
+}
+
+function or(a, b) {
+  return a || b;
+}
+
 // core functions
+
+function iff(predicate, consequent, alternative) {
+  return predicate ? consequent : alternative;
+}
 
 function cond() {
   var environment = this;
@@ -69,7 +87,7 @@ function define(name, body) {
     return environment[name] = lambda.call(environment, argNames, body);
   }
 
-  return environment[name] = arr.call(environment, body);
+  return environment[name] = arr(environment, body);
 }
 
 function lambda(names, body) {
@@ -85,10 +103,6 @@ function lambda(names, body) {
 }
 
 function arr(environment, array) {
-  if(typeof array == 'undefined') {
-    array = environment;
-    environment = {};
-  }
   if(array instanceof Array) {
     if(!(array[0] == define && array[1] instanceof Array) &&
        !(array[0] == lambda) &&
@@ -102,8 +116,6 @@ function arr(environment, array) {
     if(array=='') return array;
     // lookup string in environment
     if(environment.hasOwnProperty(array)) return environment[array];
-    // fallback to eval
-    try { return eval(array); } catch(e) {}
   }
 
   var first = _.first(array);
@@ -127,25 +139,19 @@ function arr(environment, array) {
 var each = _.each;
 var map = _.map;
 var range = _.range;
-
-function print(str) {
-  document.writeln(str+'<br />');
-}
-
-
 var first = _.first;
 var last  = _.last;
 var butfirst = _.rest;
 var butlast  = _.initial;
 
-function append(string1, string2) {
-  return string1+string2;
+function print(str) {
+  document.writeln(str+'<br />');
 }
 
-function iff(predicate, consequent, alternative) {
-  return predicate ? consequent : alternative;
+function append(a, b) {
+  return a+b;
 }
 
-function not(a) {
-  return typeof a == 'undefined' || (a instanceof Array && a.length==0);
+function length(a) {
+  return a.length;
 }
