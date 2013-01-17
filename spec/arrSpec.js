@@ -110,7 +110,7 @@ describe("arr", function() {
     expect(actualResult).toEqual(expectedResult);
 
     expression =
-      [define, ['sum-of-squares', 'x', 'y']
+      [define, ['sum-of-squares', 'x', 'y'],
         [add, ['square', 'x'], ['square', 'y']]];
     result = arr(environment, expression);
     expect(environment.square).toEqual(jasmine.any(Function));
@@ -121,7 +121,7 @@ describe("arr", function() {
     expect(actualResult).toEqual(expectedResult);
 
     expression =
-      [define, ['f', 'a']
+      [define, ['f', 'a'],
         ['sum-of-squares', [add, 'a', 1], [mul, 'a', 2]]];
     result = arr(environment, expression);
     expect(environment.square).toEqual(jasmine.any(Function));
@@ -130,6 +130,33 @@ describe("arr", function() {
     expectedResult = 136;
     actualResult = arr(environment, expression);
     expect(actualResult).toEqual(expectedResult);
+  });
+
+  it("allows me to evaluate all programs from sicp chapter 1.1.6 Conditional Expressions and Predicates", function() {
+    var environment = {};
+
+    var expression =
+      [define, ['abs', 'x'],
+        [cond,
+          [[gt, 'x', 0], 'x'],
+          [[eq, 'x', 0], 0],
+          [[lt, 'x', 0], [neg, 'x']]]];
+    var result = arr(environment, expression);
+    expect(environment.abs).toEqual(jasmine.any(Function));
+    for (var i = -5; i <= 5; i++) {
+      expect(environment.abs(i)).toEqual(Math.abs(i));
+    };
+
+    var expression =
+      [define, ['abs', 'x'],
+        [cond,
+          [[lt, 'x', 0], [neg, 'x']],
+          ['else', 'x']]];
+    var result = arr(environment, expression);
+    expect(environment.abs).toEqual(jasmine.any(Function));
+    for (var i = -5; i <= 5; i++) {
+      expect(environment.abs(i)).toEqual(Math.abs(i));
+    };
   });
 
   it("should be able to do FizzBuzz", function() {

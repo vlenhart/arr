@@ -1,5 +1,9 @@
 // basic math functions
 
+function neg(n) {
+  return -n;
+}
+
 function add() {
   return _.reduce(arguments, function(a,b) {
     return a+b;
@@ -30,11 +34,26 @@ function mod() {
   });
 }
 
+// comparison functions
+
+function lt(a, b) {
+  return a < b;
+}
+
+function eq(a, b) {
+  return a === b;
+}
+
+function gt(a, b) {
+  return a > b;
+}
+
 // core functions
 
 function cond() {
   var environment = this;
   var resultClause = _.find(arguments, function(clause) {
+    if(clause[0] == 'else') return true;
     return arr(environment, clause[0]);
   });
   return arr(environment, resultClause[1]);
@@ -48,9 +67,9 @@ function define(name, body) {
     name = _.first(name);
 
     return environment[name] = lambda.call(environment, argNames, body);
-  } else {
-    return environment[name] = arr.call(environment, body);
   }
+
+  return environment[name] = arr.call(environment, body);
 }
 
 function lambda(names, body) {
@@ -71,7 +90,9 @@ function arr(environment, array) {
     environment = {};
   }
   if(array instanceof Array) {
-    if(array[0] != lambda && array[0] != cond) { // do not evaluate the body of a lambda expression (yet)
+    if(!(array[0] == define && array[1] instanceof Array) &&
+       !(array[0] == lambda) &&
+       !(array[0] == cond)) { // do not yet evaluate the body some constructs
       array = _.map(array, function(value) {
         return arr(environment, value);
       });
@@ -106,10 +127,6 @@ function arr(environment, array) {
 var each = _.each;
 var map = _.map;
 var range = _.range;
-
-function eq(a, b) {
-  return a === b;
-}
 
 function print(str) {
   document.writeln(str+'<br />');
