@@ -36,6 +36,7 @@ function mod() {
   });
 }
 
+
 // comparison functions
 
 function lt(a, b) {
@@ -50,6 +51,7 @@ function gt(a, b) {
   return a > b;
 }
 
+
 // logic functions
 
 function not(a) {
@@ -63,6 +65,7 @@ function and(a, b) {
 function or(a, b) {
   return a || b;
 }
+
 
 // string functions
 
@@ -101,6 +104,7 @@ function stringLength(a) {
 function isStringEmpty(a) {
   return a.length === 0;
 }
+
 
 // array functions
 
@@ -149,40 +153,29 @@ function lambda(names, body) {
   };
 }
 
+function arrIsSpecialForm(fn) {
+  return (fn == define ||
+          fn == lambda ||
+          fn == cond   ||
+          fn == iff);
+}
+
 function arr(environment, body) {
-  if(typeof body == 'string') {
-    // return empty strings
-    if(body==='') return body;
-    // lookup string in environment
-    if(environment.hasOwnProperty(body)) return environment[body];
-    // if all fails return the string
-    return body;
+  if(typeof body == 'string' && environment.hasOwnProperty(body)) {
+    return environment[body];
   }
 
-  if(typeof body == 'undefined' || typeof body == 'boolean' || typeof body == 'number' || typeof body == 'function') {
-    return body;
-  }
+  if(!(body instanceof Array)) return body;
 
-  if(body instanceof Array) {
-    if(body[0] != define && body[0] != lambda && body[0] != cond && body[0] != iff) { // do not yet evaluate the body of some constructs
-      body = _.map(body, function(value) {
-        return arr(environment, value);
-      });
-    }
+  // do not yet evaluate the body of some constructs
+  if(!arrIsSpecialForm(body[0])) {
+    body = _.map(body, function(value) {
+      return arr(environment, value);
+    });
   }
 
   var first = _.first(body);
+  var rest = _.rest(body);
 
-  if(typeof first == 'string') {
-    if(environment[first]) {
-      first = environment[first];
-    } else {
-      return body;
-    }
-  }
-  if(typeof first == 'function') {
-    var rest = _.rest(body);
-    return first.apply(environment, rest);
-  }
-  return body;
+  return first.apply(environment, rest);
 }
