@@ -1,5 +1,7 @@
 // basic math functions
 
+var abs = Math.abs;
+
 function neg(n) {
   return -n;
 }
@@ -62,10 +64,55 @@ function or(a, b) {
   return a || b;
 }
 
+// string functions
+
+function print(str) {
+  document.writeln(str+'<br />');
+}
+
+function stringFirst(a, n) {
+  if(!n) n = 1;
+  return a.slice(0, n);
+}
+
+function stringButFirst(a, n) {
+  if(!n) n = 1;
+  return a.slice(n, n.length);
+}
+
+function stringLast(a, n) {
+  if(!n) n = 1;
+  return a.slice(a.length-n, a.length);
+}
+
+function stringButLast(a, n) {
+  if(!n) n = 1;
+  return a.slice(0, a.length-n);
+}
+
+function stringAppend(a, b) {
+  return a+b;
+}
+
+function stringLength(a) {
+  return a.length;
+}
+
+function isStringEmpty(a) {
+  return a.length === 0;
+}
+
+// array functions
+
+var map = _.map;
+var range = _.range;
+
+
 // core functions
 
 function iff(predicate, consequent, alternative) {
-  return predicate ? consequent : alternative;
+  var environment = this;
+  return arr(environment, predicate) ? arr(environment, consequent) : arr(environment, alternative);
 }
 
 function cond() {
@@ -102,56 +149,40 @@ function lambda(names, body) {
   };
 }
 
-function arr(environment, array) {
-  if(array instanceof Array) {
-    if(!(array[0] == define && array[1] instanceof Array) &&
-       !(array[0] == lambda) &&
-       !(array[0] == cond)) { // do not yet evaluate the body some constructs
-      array = _.map(array, function(value) {
+function arr(environment, body) {
+  if(typeof body == 'string') {
+    // return empty strings
+    if(body==='') return body;
+    // lookup string in environment
+    if(environment.hasOwnProperty(body)) return environment[body];
+    // if all fails return the string
+    return body;
+  }
+
+  if(typeof body == 'undefined' || typeof body == 'boolean' || typeof body == 'number' || typeof body == 'function') {
+    return body;
+  }
+
+  if(body instanceof Array) {
+    if(body[0] != define && body[0] != lambda && body[0] != cond && body[0] != iff) { // do not yet evaluate the body of some constructs
+      body = _.map(body, function(value) {
         return arr(environment, value);
       });
     }
-  } else if(typeof array == 'string') {
-    // return empty strings
-    if(array=='') return array;
-    // lookup string in environment
-    if(environment.hasOwnProperty(array)) return environment[array];
   }
 
-  var first = _.first(array);
+  var first = _.first(body);
 
   if(typeof first == 'string') {
     if(environment[first]) {
       first = environment[first];
     } else {
-      return array;
+      return body;
     }
   }
   if(typeof first == 'function') {
-    var rest = _.rest(array);
+    var rest = _.rest(body);
     return first.apply(environment, rest);
   }
-  return array;
-}
-
-// misc functions
-
-var each = _.each;
-var map = _.map;
-var range = _.range;
-var first = _.first;
-var last  = _.last;
-var butfirst = _.rest;
-var butlast  = _.initial;
-
-function print(str) {
-  document.writeln(str+'<br />');
-}
-
-function append(a, b) {
-  return a+b;
-}
-
-function length(a) {
-  return a.length;
+  return body;
 }
