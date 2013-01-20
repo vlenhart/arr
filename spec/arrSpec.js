@@ -6,42 +6,28 @@ describe("arr", function() {
 
   it("allows me to evaluate all programs from sicp chapter 1.1.1 Expressions", function() {
     var environment = {};
+    var tests = [
+      [486,
+       486],
+      [[add, 137, 349],
+       486],
+      [[sub, 1000, 334],
+       666],
+      [[mul, 5, 99],
+       495],
+      [[div, 10, 5],
+       2],
+      [[add, 2.7, 10],
+       12.7]
+    ];
 
-    var expression = 486;
-    var expectedResult = 486;
-    var actualResult = arr(environment, expression);
-    expect(environment).toEqual({});
-    expect(actualResult).toEqual(expectedResult);
-    
-    expression = [add, 137, 349];
-    expectedResult = 486;
-    actualResult = arr(environment, expression);
-    expect(environment).toEqual({});
-    expect(actualResult).toEqual(expectedResult);
-
-    expression = [sub, 1000, 334];
-    expectedResult = 666;
-    actualResult = arr(environment, expression);
-    expect(environment).toEqual({});
-    expect(actualResult).toEqual(expectedResult);
-
-    expression = [mul, 5, 99];
-    expectedResult = 495;
-    actualResult = arr(environment, expression);
-    expect(environment).toEqual({});
-    expect(actualResult).toEqual(expectedResult);
-
-    expression = [div, 10, 5];
-    expectedResult = 2;
-    actualResult = arr(environment, expression);
-    expect(environment).toEqual({});
-    expect(actualResult).toEqual(expectedResult);
-
-    expression = [add, 2.7, 10];
-    expectedResult = 12.7;
-    actualResult = arr(environment, expression);
-    expect(environment).toEqual({});
-    expect(actualResult).toEqual(expectedResult);
+    _.each(tests, function(test) {
+      var expression = _.first(test);
+      var expectedResult = _.last(test);
+      var actualResult = arr(environment, expression);
+      expect(environment).toEqual({});
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   it("allows me to evaluate all programs from sicp chapter 1.1.2 Naming and the Environment", function() {
