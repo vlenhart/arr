@@ -122,7 +122,6 @@ function iff(predicate, consequent, alternative) {
 function cond() {
   var environment = this;
   var resultClause = _.find(arguments, function(clause) {
-    if(clause[0] == 'else') return true;
     return arr(environment, clause[0]);
   });
   return arr(environment, resultClause[1]);
@@ -149,6 +148,7 @@ function lambda(names, body) {
     var localEnvironment = _.clone(environment);
     var args = _.object(names, arguments);
     _.extend(localEnvironment, args);
+    
     return arr(localEnvironment, body);
   };
 }

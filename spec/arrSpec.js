@@ -2,8 +2,6 @@ describe("arr", function() {
   // several examples taken from the holy text (SICP)
   // http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-4.html
 
-  var utilityFunctions = {}; // for utility functions
-
   it("allows me to evaluate all programs from sicp chapter 1.1.1 Expressions", function() {
     var environment = {};
     var tests = [
@@ -80,7 +78,6 @@ describe("arr", function() {
       [define, ['square', 'x'],
         [mul, 'x', 'x']];
     var result = arr(environment, expression);
-    _.extend(utilityFunctions, {square: environment.square});
     expect(environment.square).toEqual(jasmine.any(Function));
 
     expression = ['square', 21];
@@ -140,7 +137,7 @@ describe("arr", function() {
       [define, ['abs', 'x'],
         [cond,
           [[lt, 'x', 0], [neg, 'x']],
-          ['else', 'x']]];
+          [true, 'x']]];
     result = arr(environment, expression);
     expect(environment.abs).toEqual(jasmine.any(Function));
     for(var i=-5; i<=5; i++) {
@@ -227,14 +224,14 @@ describe("arr", function() {
       [[cond,
         [[eq, 'a', 4], 6],
         [[eq, 'b', 4], [add, 6, 7, 'a']],
-        ['else' -1]],
+        [true, -1]],
        16],
       [[add, 2, [iff, [gt, 'b', 'a'], 'b', 'a']],
        6],
       [[mul, [cond,
                [[gt, 'a', 'b'], 'a'],
                [[lt, 'a', 'b'], 'b'],
-               ['else', -1]],
+               [true, -1]],
              [add, 'a', 1]],
        16]
     ];
@@ -265,7 +262,9 @@ describe("arr", function() {
   });
 
   it("allows me to do excercise 1.3 from sicp", function() {
-    var environment = _.clone(utilityFunctions);
+    var environment = {
+      square: function(a) { return a*a; }
+    };
 
     var expression =
       [define, ['sumOfThreeSquares', 'x', 'y', 'z'],
@@ -337,16 +336,16 @@ describe("arr", function() {
     expect(environment.test).toEqual(jasmine.any(Function));
 
     expression = ['test', 0 , ['p']];
-    try {
+
+    expect(function() {
       arr(environment, expression);
-    } catch(e) {
-      // XXX: not sure how to test for infinite recursion (at least in a cross browser kind of way)
-      expect(e).toBeDefined();
-    }
+    }).toThrow();
   });
 
   it("allows me to evaluate all programs from sicp chapter 1.1.7 Example: Square Roots by Newton's Method", function() {
-    var environment = _.clone(utilityFunctions);
+    var environment = {
+      square: function(a) { return a*a; }
+    };
 
     var expressions = [
       [define, ['sqrtIter', 'guess', 'x'],
@@ -385,6 +384,93 @@ describe("arr", function() {
       expect(actualResult).toEqual(expectedResult);
     });
 
+  });
+
+  // i'm skipping excercise 1.6, as it's just a variant of 1.5
+
+  it("allows me to do excercise 1.7 from sicp", function() {
+    var environment = {
+      square: function(a) { return a*a; }
+    };
+
+    // these are the same as above
+    var expressions = [
+      [define, ['sqrtIter', 'guess', 'x'],
+        [iff, ['isGoodEnough', 'guess', 'x'],
+        'guess',
+        ['sqrtIter', ['improve', 'guess', 'x'], 'x']]],
+      [define, ['improve', 'guess', 'x'],
+        ['average', 'guess', [div, 'x', 'guess']]],
+      [define, ['average', 'x', 'y'],
+        [div, [add, 'x', 'y'], 2]],
+      [define, ['isGoodEnough', 'guess', 'x'],
+        [lt, [abs, [sub, ['square', 'guess'], 'x']], 0.001]],
+      [define, ['sqrt', 'x'],
+        ['sqrtIter', 1.0, 'x']]
+    ];
+    _.each(expressions, function(expression) {
+      var actualResult = arr(environment, expression);
+      expect(actualResult).toEqual(jasmine.any(Function));
+    });
+
+    var tests = [
+      [['sqrt', 9],
+       3.00009155413138], // should be 3
+      [['sqrt', 0.09],
+       0.3000299673226795], // should be 0.3
+      [['sqrt', 0.0009],
+       0.04030062264654547], // should be 0.03 (a bit off)
+      [['sqrt', 0.000009],
+       0.03134584760656851], // should be 0.003 (way off)
+      [['sqrt', 0.00000009],
+       0.031250959056630584] // should be 0.0003 (way off)
+    ];
+
+    _.each(tests, function(test) {
+      var expression = _.first(test);
+      var expectedResult = _.last(test);
+      var actualResult = arr(environment, expression);
+      expect(actualResult).toEqual(expectedResult);
+    });
+
+    expect(function() {
+      environment.sqrt(90000000000000); // this just crashes because of a stack overflow
+    }).toThrow();
+
+    // now we change the isGoogEnough function
+
+    expressions = [
+      [define, ['isGoodEnough', 'guess', 'x'],
+        [lt, [abs, [sub, 1.0, [div, ['improve', 'guess', 'x'], 'guess']]], 0.001]]
+    ];
+
+    _.each(expressions, function(expression) {
+      var actualResult = arr(environment, expression);
+      expect(actualResult).toEqual(jasmine.any(Function));
+    });
+
+    tests = [
+      [['sqrt', 9],
+       3.00009155413138], // should be 3 (close enough)
+      [['sqrt', 0.09],
+       0.3000299673226795], // should be 0.3 (close enough)
+      [['sqrt', 0.0009],
+       0.03002766742182557], // should be 0.03 (close enough)
+      [['sqrt', 0.000009],
+       0.0030000276392750298], // should be 0.003 (close enough)
+      [['sqrt', 0.00000009],
+       0.0003000322764683917], // should be 0.0003 (close enough)
+
+      [['sqrt', 90000000000000], // should be 9486832.980505139 (close enough and definitely better than a stack overflow)
+       9486846.590065714]
+    ];
+
+    _.each(tests, function(test) {
+      var expression = _.first(test);
+      var expectedResult = _.last(test);
+      var actualResult = arr(environment, expression);
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   it("should be able to do FizzBuzz", function() {
