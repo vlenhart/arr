@@ -1,6 +1,8 @@
 // basic math functions
 
 var abs = Math.abs;
+var exp = Math.exp;
+var log = Math.log;
 
 function neg(n) {
   return -n;

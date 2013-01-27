@@ -28,6 +28,37 @@ describe("arr", function() {
     });
   });
 
+  it("allows me to evaluate all programs from sicp chapter 1.1.1 Expressions (character variant)", function() {
+    var globalEnvironment = {};
+    var ß = function(expression) {
+      return arr(globalEnvironment, expression);
+    };
+
+    expect(ß(
+        486
+      )).toEqual(486);
+
+    expect(ß(
+        add(137, 349)
+      )).toEqual(486);
+
+    expect(ß(
+        sub(1000, 334)
+      )).toEqual(666);
+
+    expect(ß(
+        mul(5, 99)
+      )).toEqual(495);
+
+    expect(ß(
+        div(10, 5)
+      )).toEqual(2);
+
+    expect(ß(
+        add(2.7, 10)
+      )).toEqual(12.7);
+  });
+
   it("allows me to evaluate all programs from sicp chapter 1.1.2 Naming and the Environment", function() {
     var environment = {};
 
@@ -58,6 +89,49 @@ describe("arr", function() {
     expect(environment.circumference).toEqual(62.8318);
   });
 
+  it("allows me to evaluate all programs from sicp chapter 1.1.2 Naming and the Environment (variant)", function() {
+    var R = function(expression) {
+      return arr(this, expression);
+    };
+
+    R.define = function(name, expression) {
+      return define.apply(R, arguments);
+    }
+
+    R.mul = function() {
+      var args = _.map(arguments, function(arg) {
+        return arr(R, arg);
+      })
+      return mul.apply(R, args);
+    }
+
+    R.define('size', 2);
+    expect(R.size).toEqual(2);
+
+    expect(R.mul(5, 'size')).toEqual(10);
+
+    R.define('pi', 3.14159);
+    expect(R.pi).toEqual(3.14159);
+
+    R.define('radius', 10);
+    expect(R.radius).toEqual(10);
+
+    expect(R(
+      R.mul(
+        'pi',
+        R.mul(
+          'radius',
+          'radius')))
+    ).toEqual(314.159);
+
+    R.define('circumference',
+      R.mul(
+        2,
+        'pi',
+        'radius'));
+    expect(R.circumference).toEqual(62.8318);
+  });
+
   it("allows me to evaluate all programs from sicp chapter 1.1.3 Evaluating Combinations", function() {
     var environment = {};
 
@@ -71,9 +145,50 @@ describe("arr", function() {
     expect(actualResult).toEqual(expectedResult);
   });
 
+  it("allows me to evaluate all programs from sicp chapter 1.1.3 Evaluating Combinations (variant)", function() {
+    var R = function(expression) {
+      return arr(this, expression);
+    };
+
+    R.define = function(name, expression) {
+      return define.apply(R, arguments);
+    }
+
+    R.mul = function() {
+      var args = _.map(arguments, function(arg) {
+        return arr(R, arg);
+      })
+      return mul.apply(R, args);
+    }
+
+    R.add = function() {
+      var args = _.map(arguments, function(arg) {
+        return arr(R, arg);
+      })
+      return add.apply(R, args);
+    }
+
+    expect(R(
+      R.mul(
+        R.add(
+          2,
+          R.mul(
+            4,
+            6)),
+        R.add(
+          3,
+          5,
+          7)))
+    ).toEqual(390);
+  });
+
   it("allows me to evaluate all programs from sicp chapter 1.1.4 Compound Procedures", function() {
     var environment = {};
 
+    /*
+    R.define(['square', 'x'],
+      [R.mul, 'x', 'x']); // quoted syntax
+    */
     var expression =
       [define, ['square', 'x'],
         [mul, 'x', 'x']];
@@ -472,6 +587,107 @@ describe("arr", function() {
       expect(actualResult).toEqual(expectedResult);
     });
   });
+
+  it("allows me to do excercise 1.8 from sicp", function() {
+    var environment = {
+      square: function(a) { return a*a; }
+    };
+
+    // same algorithm as above with the improved isGoodEnough and the new improve function
+    var expressions = [
+      [define, ['cubeRootIter', 'guess', 'x'],
+        [iff, ['isGoodEnough', 'guess', 'x'],
+        'guess',
+        ['cubeRootIter', ['improve', 'guess', 'x'], 'x']]],
+      [define, ['improve', 'guess', 'x'],
+        [div,
+          [add,
+            [div,
+              'x',
+              ['square', 'guess']],
+            [mul,
+              2,
+              'guess']],
+          3]],
+      [define, ['average', 'x', 'y'],
+        [div, [add, 'x', 'y'], 2]],
+      [define, ['isGoodEnough', 'guess', 'x'],
+        [lt, [abs, [sub, 1.0, [div, ['improve', 'guess', 'x'], 'guess']]], 0.001]],
+      [define, ['cubeRoot', 'x'],
+        ['cubeRootIter', 1.0, 'x']]
+    ];
+    _.each(expressions, function(expression) {
+      var result = arr(environment, expression);
+      expect(result).toEqual(jasmine.any(Function));
+    });
+
+    var tests = [
+      [['cubeRoot', 8],
+       2.000004911675504], // should be 2 (good enough)
+      [['cubeRoot', 27],
+       3.001274406506175], // should be 3 (good enough)
+      [['cubeRoot', 64],
+       4.000017449510739], // should be 4 (good enough)
+      [['cubeRoot', 125],
+       5.00003794283566]   // should be 5 (good enough)
+    ];
+
+    _.each(tests, function(test) {
+      var expression = _.first(test);
+      var expectedResult = _.last(test);
+      var actualResult = arr(environment, expression);
+      expect(actualResult).toEqual(expectedResult);
+    });
+  });
+
+  it("allows me to evaluate all programs from sicp chapter 1.1.8 Procedures as Black-Box Abstractions (square variant)", function() {
+    var environment = {};
+    var expressions = [
+      [define, ['square', 'x'],
+        [exp, ['double', [log, 'x']]]],
+      [define, ['double', 'x'],
+        [add, 'x', 'x']]
+    ];
+
+    _.each(expressions, function(expression) {
+      var result = arr(environment, expression);
+      expect(result).toEqual(jasmine.any(Function));
+    });
+
+    // due to the use of logarithms, squares of negative numbers cannot be generated (the absolute value should be used in that case)
+    for(var i=0; i<10; i++) {
+      // we are losing some precision on all those floating point operations, so we use a really small epsilon
+      var goodEnough = Math.abs(environment.square(i)-(i*i)) < 0.0000000000001;
+      expect(goodEnough).toBe(true);
+    }
+
+  });
+
+/*
+// block structure
+  (define (sqrt x)
+  (define (good-enough? guess x)
+    (< (abs (- (square guess) x)) 0.001))
+  (define (improve guess x)
+    (average guess (/ x guess)))
+  (define (sqrt-iter guess x)
+    (if (good-enough? guess x)
+        guess
+        (sqrt-iter (improve guess x) x)))
+  (sqrt-iter 1.0 x))
+
+// lexical scoping
+(define (sqrt x)
+  (define (good-enough? guess)
+    (< (abs (- (square guess) x)) 0.001))
+  (define (improve guess)
+    (average guess (/ x guess)))
+  (define (sqrt-iter guess)
+    (if (good-enough? guess)
+        guess
+        (sqrt-iter (improve guess))))
+  (sqrt-iter 1.0))
+*/
 
   it("should be able to do FizzBuzz", function() {
     var environment = {};
