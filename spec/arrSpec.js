@@ -663,31 +663,78 @@ describe("arr", function() {
 
   });
 
-/*
-// block structure
-  (define (sqrt x)
-  (define (good-enough? guess x)
-    (< (abs (- (square guess) x)) 0.001))
-  (define (improve guess x)
-    (average guess (/ x guess)))
-  (define (sqrt-iter guess x)
-    (if (good-enough? guess x)
-        guess
-        (sqrt-iter (improve guess x) x)))
-  (sqrt-iter 1.0 x))
+  it("allows me to evaluate all programs from sicp chapter 1.1.8 Procedures as Black-Box Abstractions (block structure)", function() {
+    var environment = {
+      square: function(x) { return x*x; }
+    };
+    var expression =
+      [define, ['sqrt', 'x'],
+        [define, ['isGoodEnough', 'guess', 'x'],
+          [lt, [abs, [sub, ['square', 'guess'], 'x']], 0.000001]],
+        [define, ['improve', 'guess', 'x'],
+          ['average', 'guess', [div, 'x', 'guess']]],
+        [define, ['sqrtIter', 'guess', 'x'],
+          [iff, ['isGoodEnough', 'guess', 'x'],
+            'guess',
+            ['sqrtIter', ['improve', 'guess', 'x'], 'x']]],
+        [define, ['average', 'x', 'y'],
+          [div, [add, 'x', 'y'], 2]],
+        ['sqrtIter', 1.0, 'x']
+      ];
 
-// lexical scoping
-(define (sqrt x)
-  (define (good-enough? guess)
-    (< (abs (- (square guess) x)) 0.001))
-  (define (improve guess)
-    (average guess (/ x guess)))
-  (define (sqrt-iter guess)
-    (if (good-enough? guess)
-        guess
-        (sqrt-iter (improve guess))))
-  (sqrt-iter 1.0))
-*/
+    var result = arr(environment, expression);
+    expect(result).toEqual(jasmine.any(Function));
+
+    for(var i=0; i<10; i++) {
+      var goodEnough = Math.abs(environment.sqrt(i)-Math.sqrt(i)) < 0.001;
+      expect(goodEnough).toBe(true);
+    }
+
+  });
+
+  it("can do lexical scoping", function() {
+    var environment = {};
+    var expression =
+      [define, ['test1', 'a'],
+        [define, ['test2'],
+          [add, 'a', 1]
+        ],
+        ['test2']
+      ];
+      debugger;
+      // FIXME: this does not work yet, the inner definition still has it's original environment
+      var inc = arr(environment, expression);
+      expect(inc(0)).toEqual(1);
+  });
+
+  it("allows me to evaluate all programs from sicp chapter 1.1.8 Procedures as Black-Box Abstractions (lexical scoping)", function() {
+    var environment = {
+      square: function(x) { return x*x; }
+    };
+    var expression =
+      [define, ['sqrt', 'x'],
+        [define, ['isGoodEnough', 'guess'],
+          [lt, [abs, [sub, ['square', 'guess'], 'x']], 0.001]],
+        [define, ['improve', 'guess'],
+          ['average', 'guess', [div, 'x', 'guess']]],
+        [define, ['sqrtIter', 'guess'],
+          [iff, ['isGoodEnough', 'guess'],
+            'guess',
+            ['sqrtIter', ['improve', 'guess']]]],
+        [define, ['average', 'x', 'y'],
+          [div, [add, 'x', 'y'], 2]],
+        ['sqrtIter', 1.0]
+      ];
+
+    var result = arr(environment, expression);
+    expect(result).toEqual(jasmine.any(Function));
+
+    for(var i=0; i<10; i++) {
+      var goodEnough = Math.abs(environment.sqrt(i)-Math.sqrt(i)) < 0.001;
+      expect(goodEnough).toBe(true);
+    }
+
+  });
 
   it("should be able to do FizzBuzz", function() {
     var environment = {};

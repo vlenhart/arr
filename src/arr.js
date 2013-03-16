@@ -129,17 +129,28 @@ function cond() {
   return arr(environment, resultClause[1]);
 }
 
-function define(name, body) {
+function define(name, expression) {
   var environment = this;
+
+  // handle block structure
+  if(arguments.length > 2) { // when actually have multiple expressions
+    // the first ones should all be internal definitions
+    var internals = Array.prototype.slice.call(arguments, 1, length-1); // skip the name (first) and expression (last)
+    _.each(internals, function(internal) {
+      arr(environment, internal);
+    });
+    // the last one is the actual expression
+    expression = _.last(arguments);
+  }
 
   if(name instanceof Array) {
     var argNames = _.rest(name);
     name = _.first(name);
 
-    return environment[name] = lambda.call(environment, argNames, body);
+    return environment[name] = lambda.call(environment, argNames, expression);
   }
 
-  return environment[name] = arr(environment, body);
+  return environment[name] = arr(environment, expression);
 }
 
 function lambda(names, body) {
@@ -168,6 +179,7 @@ function arr(environment, body) {
   }
 
   if(!(body instanceof Array)) return body;
+
 
   // do not yet evaluate the body of some constructs
   if(!arrIsSpecialForm(body[0])) {
