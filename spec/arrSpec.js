@@ -695,14 +695,14 @@ describe("arr", function() {
   it("can do lexical scoping", function() {
     var environment = {};
     var expression =
-      [define, ['test1', 'a'],
-        [define, ['test2'],
+      [define, ['test1', 'a'], // define test1
+        [define, ['test2'], // define test2
           [add, 'a', 1]
         ],
-        ['test2']
+        ['test2'] // execute test2
       ];
-      debugger;
-      // FIXME: this does not work yet, the inner definition still has it's original environment
+      // debugger;
+      // FIXME: test2 still has it's original environment
       var inc = arr(environment, expression);
       expect(inc(0)).toEqual(1);
   });
