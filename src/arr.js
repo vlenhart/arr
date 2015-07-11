@@ -166,12 +166,6 @@ function lambda(names, body) {
   };
 }
 
-function arrIsSpecialForm(fn) {
-  return (fn == define ||
-          fn == lambda ||
-          fn == cond   ||
-          fn == iff);
-}
 
 function arr(environment, body) {
   if(typeof body == 'string' && environment.hasOwnProperty(body)) {
@@ -181,15 +175,18 @@ function arr(environment, body) {
   if(!(body instanceof Array)) return body;
 
 
+  var fn = _.first(body);
+  var args = _.rest(body);
+
   // do not yet evaluate the body of some constructs
-  if(!arrIsSpecialForm(body[0])) {
-    body = _.map(body, function(value) {
+  var specialForms = [define, lambda, cond, iff];
+  if(!_.contains(specialForms, fn)) {
+    var newBody = _.map(body, function(value) {
       return arr(environment, value);
     });
+    fn = _.first(newBody);
+    args = _.rest(newBody);
   }
 
-  var first = _.first(body);
-  var rest = _.rest(body);
-
-  return first.apply(environment, rest);
+  return fn.apply(environment, args);
 }
