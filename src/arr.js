@@ -4,108 +4,136 @@ var abs = Math.abs;
 var exp = Math.exp;
 var log = Math.log;
 
-function neg(n) {
-  return -n;
-}
+var neg = function (n) {
+    return -n;
+};
 
-function add() {
-  return _.reduce(arguments, function(a,b) {
-    return a+b;
-  });
-}
+var argsFn = function (fn) {
+    var result = function () {
+        var args = arguments;
+        var result = args[0];
 
-function sub() {
-  return _.reduce(arguments, function(a,b) {
-    return a-b;
-  });
-}
+        for (
+            var i = 1;
+            i < args.length;
+            ++i
+        ) {
+            var arg = args[i];
+            result = fn(result, arg);
+        }
+        return result;
+    };
 
-function mul() {
-  return _.reduce(arguments, function(a,b) {
-    return a*b;
-  });
-}
+    return result;
+};
 
-function div() {
-  return _.reduce(arguments, function(a,b) {
-    return a/b;
-  });
-}
+var add = argsFn(function(a, b) {
+    return a + b;
+});
 
-function mod() {
-  return _.reduce(arguments, function(a,b) {
+var sub = argsFn(function(a, b) {
+    return a - b;
+});
+
+var mul = argsFn(function(a, b) {
+    return a * b;
+});
+
+var div = argsFn(function(a, b) {
+    return a / b;
+});
+
+var mod = argsFn(function(a, b) {
     return a % b;
-  });
-}
+});
 
 
 // comparison functions
 
-function lt(a, b) {
-  return a < b;
-}
+var lt = function (a, b) {
+    return a < b;
+};
 
-function eq(a, b) {
-  return a === b;
-}
+var eq = function (a, b) {
+    return a === b;
+};
 
-function gt(a, b) {
-  return a > b;
-}
+var gt = function (a, b) {
+    return a > b;
+};
 
 
 // logic functions
 
-function not(a) {
-  return !a;
-}
+var not = function (a) {
+    return !a;
+};
 
-function and(a, b) {
-  return a && b;
-}
+var and = function (a, b) {
+    return a && b;
+};
 
-function or(a, b) {
-  return a || b;
-}
+var or = function (a, b) {
+    return a || b;
+};
 
 
 // string functions
 
-function print(str) {
-  document.writeln(str+'<br />');
-}
+var print = function (str) {
+    document.writeln(str + '<br />');
+};
 
-function stringFirst(a, n) {
-  if(!n) n = 1;
-  return a.slice(0, n);
-}
+var stringFirst = function (a, n) {
+    if(!n) {
+        n = 1;
+    }
+    
+    var result = a.slice(0, n);
+    return result;
+};
 
-function stringButFirst(a, n) {
-  if(!n) n = 1;
-  return a.slice(n, n.length);
-}
+var stringButFirst = function (a, n) {
+    if(!n) {
+        n = 1;
+    }
+    
+    var result = a.slice(n, n.length);
+    return result;
+};
 
-function stringLast(a, n) {
-  if(!n) n = 1;
-  return a.slice(a.length-n, a.length);
-}
+var stringLast = function (a, n) {
+    if(!n) {
+        n = 1;
+    }
+    
+    var result = a.slice(a.length - n, a.length);
+    return result;
+};
 
-function stringButLast(a, n) {
-  if(!n) n = 1;
-  return a.slice(0, a.length-n);
-}
+var stringButLast = function (a, n) {
+    if(!n) {
+        n = 1;
+    }
+    
+    var result = a.slice(0, a.length - n);
+    return result;
+};
 
-function stringAppend(a, b) {
-  return a+b;
-}
+var stringAppend = function (a, b) {
+    var result = a + b;
+    return result;
+};
 
-function stringLength(a) {
-  return a.length;
-}
+var stringLength = function (a) {
+    var result = a.length;
+    return result;
+};
 
-function isStringEmpty(a) {
-  return a.length === 0;
-}
+var isStringEmpty = function (a) {
+    var result = a.length === 0;
+    return result;
+};
 
 
 // array functions
@@ -116,77 +144,76 @@ var range = _.range;
 
 // core functions
 
-function iff(predicate, consequent, alternative) {
-  var environment = this;
-  return arr(environment, predicate) ? arr(environment, consequent) : arr(environment, alternative);
-}
+var iff = function (predicate, consequent, alternative) {
+    var environment = this;
+    return arr(environment, predicate) ? arr(environment, consequent) : arr(environment, alternative);
+};
 
-function cond() {
-  var environment = this;
-  var resultClause = _.find(arguments, function(clause) {
-    return arr(environment, clause[0]);
-  });
-  return arr(environment, resultClause[1]);
-}
-
-function define(name, expression) {
-  var environment = this;
-
-  // handle block structure
-  if(arguments.length > 2) { // when actually have multiple expressions
-    // the first ones should all be internal definitions
-    var internals = Array.prototype.slice.call(arguments, 1, length-1); // skip the name (first) and expression (last)
-    _.each(internals, function(internal) {
-      arr(environment, internal);
+var cond = function () {
+    var environment = this;
+    var resultClause = _.find(arguments, function(clause) {
+        return arr(environment, clause[0]);
     });
-    // the last one is the actual expression
-    expression = _.last(arguments);
-  }
+    return arr(environment, resultClause[1]);
+};
 
-  if(name instanceof Array) {
-    var argNames = _.rest(name);
-    name = _.first(name);
+var define = function (name, expression) {
+    var environment = this;
 
-    return environment[name] = lambda.call(environment, argNames, expression);
-  }
+    // handle block structure
+    if(arguments.length > 2) { // when actually have multiple expressions
+        // the first ones should all be internal definitions
+        var internals = Array.prototype.slice.call(arguments, 1, length-1); // skip the name (first) and expression (last)
+        _.each(internals, function(internal) {
+            arr(environment, internal);
+        });
+        // the last one is the actual expression
+        expression = _.last(arguments);
+    }
 
-  return environment[name] = arr(environment, expression);
-}
+    if(name instanceof Array) {
+        var argNames = _.rest(name);
+        name = _.first(name);
 
-function lambda(names, body) {
-  var environment = this;
+        return environment[name] = lambda.call(environment, argNames, expression);
+    }
 
-  return function() {
-    // add arguments to the local environment
-    var localEnvironment = _.clone(environment);
-    var args = _.object(names, arguments);
-    _.extend(localEnvironment, args);
-    
-    return arr(localEnvironment, body);
-  };
-}
+    return environment[name] = arr(environment, expression);
+};
+
+var lambda = function (names, body) {
+    var environment = this;
+
+    return function() {
+        // add arguments to the local environment
+        var localEnvironment = _.clone(environment);
+        var args = _.object(names, arguments);
+        _.extend(localEnvironment, args);
+        
+        return arr(localEnvironment, body);
+    };
+};
+
+var arr = function (environment, body) {
+    if(typeof body == 'string' && environment.hasOwnProperty(body)) {
+        return environment[body];
+    }
+
+    if(!(body instanceof Array)) return body;
 
 
-function arr(environment, body) {
-  if(typeof body == 'string' && environment.hasOwnProperty(body)) {
-    return environment[body];
-  }
+    var fn = _.first(body);
+    var args = _.rest(body);
 
-  if(!(body instanceof Array)) return body;
+    // do not yet evaluate the body of some constructs
+    var specialForms = [define, lambda, cond, iff];
+    if(!_.contains(specialForms, fn)) {
+        var newBody = _.map(body, function(value) {
+            return arr(environment, value);
+        });
+        fn = _.first(newBody);
+        args = _.rest(newBody);
+    }
 
-
-  var fn = _.first(body);
-  var args = _.rest(body);
-
-  // do not yet evaluate the body of some constructs
-  var specialForms = [define, lambda, cond, iff];
-  if(!_.contains(specialForms, fn)) {
-    var newBody = _.map(body, function(value) {
-      return arr(environment, value);
-    });
-    fn = _.first(newBody);
-    args = _.rest(newBody);
-  }
-
-  return fn.apply(environment, args);
-}
+    return fn.apply(environment, args);
+};
