@@ -695,14 +695,13 @@ describe("arr", function() {
   it("can do lexical scoping", function() {
     var environment = {};
     var expression =
-      [define, ['test1', 'a'], // define test1
-        [define, ['test2'], // define test2
-          [add, 'a', 1]
-        ],
-        ['test2'] // execute test2
-      ];
-      // debugger;
-      // FIXME: test2 still has it's original environment
+      [define, ['test1', 'a'], //  function test1(a) {
+        [define, ['test2'],    //    function test2() {
+          [add, 'a', 1]        //      return a + 1;
+        ],                     //    }
+        ['test2']              //    return test2(a);
+      ];                       //  }
+
       var inc = arr(environment, expression);
       expect(inc(0)).toEqual(1);
   });

@@ -88,7 +88,7 @@ var stringFirst = function (a, n) {
     if(!n) {
         n = 1;
     }
-    
+
     var result = a.slice(0, n);
     return result;
 };
@@ -97,7 +97,7 @@ var stringButFirst = function (a, n) {
     if(!n) {
         n = 1;
     }
-    
+
     var result = a.slice(n, n.length);
     return result;
 };
@@ -106,7 +106,7 @@ var stringLast = function (a, n) {
     if(!n) {
         n = 1;
     }
-    
+
     var result = a.slice(a.length - n, a.length);
     return result;
 };
@@ -115,7 +115,7 @@ var stringButLast = function (a, n) {
     if(!n) {
         n = 1;
     }
-    
+
     var result = a.slice(0, a.length - n);
     return result;
 };
@@ -157,34 +157,39 @@ var cond = function () {
     return arr(environment, resultClause[1]);
 };
 
-var define = function (name, expression) {
+var define = function () {
     var environment = this;
+    var name = _.first(arguments);
+    var expression = _.last(arguments);
 
-    // handle block structure
-    if(arguments.length > 2) { // when actually have multiple expressions
-        // the first ones should all be internal definitions
-        var internals = Array.prototype.slice.call(arguments, 1, length-1); // skip the name (first) and expression (last)
-        _.each(internals, function(internal) {
+    var isBlockStructure = arguments.length > 2;
+    if(isBlockStructure) {
+        // skip the name (first) and expression (last)
+        for (var i = 1; i < arguments.length - 1; ++i) {
+            var internal = arguments[i];
             arr(environment, internal);
-        });
-        // the last one is the actual expression
-        expression = _.last(arguments);
+        }
     }
 
     if(name instanceof Array) {
         var argNames = _.rest(name);
         name = _.first(name);
 
-        return environment[name] = lambda.call(environment, argNames, expression);
+        environment[name] = lambda.call(environment, argNames, expression);
+    } else {
+        environment[name] = arr(environment, expression);
     }
 
-    return environment[name] = arr(environment, expression);
+    return environment[name];
 };
 
 var lambda = function (names, body) {
     var environment = this;
 
     return function() {
+        if(this != window) {
+            environment = this;
+        }
         // add arguments to the local environment
         var localEnvironment = _.clone(environment);
         var args = _.object(names, arguments);
@@ -195,19 +200,27 @@ var lambda = function (names, body) {
 };
 
 var arr = function (environment, body) {
-    if(typeof body == 'string' && environment.hasOwnProperty(body)) {
-        return environment[body];
+    var bodyMaybeVarName = typeof body == 'string';
+    var bodyIsVarName = bodyMaybeVarName && environment.hasOwnProperty(body);
+
+    if(bodyIsVarName) {
+        var variable = environment[body];
+        return variable;
     }
 
-    if(!(body instanceof Array)) return body;
-
+    var isScalar = !(body instanceof Array);
+    if(isScalar) {
+        return body;
+    }
 
     var fn = _.first(body);
     var args = _.rest(body);
 
     // do not yet evaluate the body of some constructs
     var specialForms = [define, lambda, cond, iff];
-    if(!_.contains(specialForms, fn)) {
+    var fnIsSpecialForm = specialForms.indexOf(fn) >= 0;
+    //_.contains(specialForms, fn)
+    if(!fnIsSpecialForm) {
         var newBody = _.map(body, function(value) {
             return arr(environment, value);
         });
