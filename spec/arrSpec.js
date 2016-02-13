@@ -28,37 +28,6 @@ describe("arr", function() {
     });
   });
 
-  it("allows me to evaluate all programs from sicp chapter 1.1.1 Expressions (character variant)", function() {
-    var globalEnvironment = {};
-    var ß = function(expression) {
-      return arr(globalEnvironment, expression);
-    };
-
-    expect(ß(
-        486
-      )).toEqual(486);
-
-    expect(ß(
-        add(137, 349)
-      )).toEqual(486);
-
-    expect(ß(
-        sub(1000, 334)
-      )).toEqual(666);
-
-    expect(ß(
-        mul(5, 99)
-      )).toEqual(495);
-
-    expect(ß(
-        div(10, 5)
-      )).toEqual(2);
-
-    expect(ß(
-        add(2.7, 10)
-      )).toEqual(12.7);
-  });
-
   it("allows me to evaluate all programs from sicp chapter 1.1.2 Naming and the Environment", function() {
     var environment = {};
 
@@ -742,6 +711,47 @@ describe("arr", function() {
       expect(error).toBeLessThan(epsilon);
     }
 
+  });
+
+  describe("1.2.1 Linear Recursion and Iteration", function() {
+
+    it("runs the recursive version", function () {
+      var environment = {};
+      var expression =
+        [define, ['factorial', 'n'],
+          [iff, [eq, 'n', 1],
+            1,
+            [mul, 'n', ['factorial', [sub, 'n', 1]]]
+          ]
+        ];
+      var result = arr(environment, expression);
+      expect(result).toEqual(jasmine.any(Function));
+      expect(environment.factorial(6)).toEqual(720);
+    });
+
+    it("runs the iterative version", function () {
+      var environment = {};
+      var expression = [
+        [define, ['factorial', 'n'],
+          ['fact-iter', 1, 1, 'n']
+        ],
+        [define, ['fact-iter', 'product', 'counter', 'max-count'],
+          [iff, [gt, 'counter', 'max-count'],
+            'product',
+            ['fact-iter',
+              [mul, 'counter', 'product'],
+              [add, 'counter', 1],
+              'max-count'
+            ]
+          ]
+        ]
+      ];
+      var result = arr(environment, expression);
+      expect(result).toEqual(jasmine.any(Function));
+      expect(environment.factorial(6)).toEqual(720);
+    });
+
+    //TODO(vlaube): do excercises https://mitpress.mit.edu/sicp/chapter1/node12.html
   });
 
   it("should be able to do FizzBuzz", function() {

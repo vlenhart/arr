@@ -222,13 +222,13 @@ var arr = function arr (environment, body) {
         return body;
     }
 
-    var fn = _.first(body);
+    var fn = body[0];
     var args = _.rest(body);
 
     // do not yet evaluate the body of some constructs
     var specialForms = [define, lambda, cond, iff];
     var fnIsSpecialForm = specialForms.indexOf(fn) >= 0;
-    //_.contains(specialForms, fn)
+
     if(!fnIsSpecialForm) {
         var newBody = _.map(body, function(value) {
             return arr(environment, value);
