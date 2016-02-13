@@ -655,10 +655,13 @@ describe("arr", function() {
     });
 
     // due to the use of logarithms, squares of negative numbers cannot be generated (the absolute value should be used in that case)
+    var epsilon = 0.0000000000001;
     for(var i=0; i<10; i++) {
-      // we are losing some precision on all those floating point operations, so we use a really small epsilon
-      var goodEnough = Math.abs(environment.square(i)-(i*i)) < 0.0000000000001;
-      expect(goodEnough).toBe(true);
+      var approximation = environment.square(i);
+      var reference = i * i;
+      var error = Math.abs(approximation - reference);
+
+      expect(error).toBeLessThan(epsilon);
     }
 
   });
@@ -670,7 +673,7 @@ describe("arr", function() {
     var expression =
       [define, ['sqrt', 'x'],
         [define, ['isGoodEnough', 'guess', 'x'],
-          [lt, [abs, [sub, ['square', 'guess'], 'x']], 0.000001]],
+          [lt, [abs, [sub, ['square', 'guess'], 'x']], 0.001]],
         [define, ['improve', 'guess', 'x'],
           ['average', 'guess', [div, 'x', 'guess']]],
         [define, ['sqrtIter', 'guess', 'x'],
@@ -685,9 +688,12 @@ describe("arr", function() {
     var result = arr(environment, expression);
     expect(result).toEqual(jasmine.any(Function));
 
+    var epsilon = 0.001;
     for(var i=0; i<10; i++) {
-      var goodEnough = Math.abs(environment.sqrt(i)-Math.sqrt(i)) < 0.001;
-      expect(goodEnough).toBe(true);
+      var approximation = environment.sqrt(i);
+      var error = Math.abs((approximation * approximation) - i);
+
+      expect(error).toBeLessThan(epsilon);
     }
 
   });
@@ -708,12 +714,13 @@ describe("arr", function() {
 
   it("allows me to evaluate all programs from sicp chapter 1.1.8 Procedures as Black-Box Abstractions (lexical scoping)", function() {
     var environment = {
-      square: function(x) { return x*x; }
+      square: function square (x) { return x*x; }
     };
+    var epsilon = 0.001;
     var expression =
       [define, ['sqrt', 'x'],
         [define, ['isGoodEnough', 'guess'],
-          [lt, [abs, [sub, ['square', 'guess'], 'x']], 0.001]],
+          [lt, [abs, [sub, ['square', 'guess'], 'x']], epsilon]],
         [define, ['improve', 'guess'],
           ['average', 'guess', [div, 'x', 'guess']]],
         [define, ['sqrtIter', 'guess'],
@@ -728,9 +735,11 @@ describe("arr", function() {
     var result = arr(environment, expression);
     expect(result).toEqual(jasmine.any(Function));
 
-    for(var i=0; i<10; i++) {
-      var goodEnough = Math.abs(environment.sqrt(i)-Math.sqrt(i)) < 0.001;
-      expect(goodEnough).toBe(true);
+    for(var i = 0; i < 10; ++i) {
+      var approximation = environment.sqrt(i);
+      var error = Math.abs((approximation * approximation) - i);
+
+      expect(error).toBeLessThan(epsilon);
     }
 
   });

@@ -4,12 +4,12 @@ var abs = Math.abs;
 var exp = Math.exp;
 var log = Math.log;
 
-var neg = function (n) {
+var neg = function neg (n) {
     return -n;
 };
 
-var argsFn = function (fn) {
-    var result = function () {
+var argsFn = function argsFn (fn) {
+    var result = function result () {
         var args = arguments;
         var result = args[0];
 
@@ -27,64 +27,64 @@ var argsFn = function (fn) {
     return result;
 };
 
-var add = argsFn(function(a, b) {
+var add = argsFn(function add (a, b) {
     return a + b;
 });
 
-var sub = argsFn(function(a, b) {
+var sub = argsFn(function sub (a, b) {
     return a - b;
 });
 
-var mul = argsFn(function(a, b) {
+var mul = argsFn(function mul (a, b) {
     return a * b;
 });
 
-var div = argsFn(function(a, b) {
+var div = argsFn(function div (a, b) {
     return a / b;
 });
 
-var mod = argsFn(function(a, b) {
+var mod = argsFn(function mod (a, b) {
     return a % b;
 });
 
 
 // comparison functions
 
-var lt = function (a, b) {
+var lt = function lt (a, b) {
     return a < b;
 };
 
-var eq = function (a, b) {
+var eq = function eq (a, b) {
     return a === b;
 };
 
-var gt = function (a, b) {
+var gt = function gt (a, b) {
     return a > b;
 };
 
 
 // logic functions
 
-var not = function (a) {
+var not = function not (a) {
     return !a;
 };
 
-var and = function (a, b) {
+var and = argsFn(function and (a, b) {
     return a && b;
-};
+});
 
-var or = function (a, b) {
+var or = argsFn(function or (a, b) {
     return a || b;
-};
+});
 
 
 // string functions
 
-var print = function (str) {
-    document.writeln(str + '<br />');
+var print = function print (str) {
+    console.log(str);
 };
 
-var stringFirst = function (a, n) {
+var stringFirst = function stringFirst (a, n) {
     if(!n) {
         n = 1;
     }
@@ -93,16 +93,16 @@ var stringFirst = function (a, n) {
     return result;
 };
 
-var stringButFirst = function (a, n) {
+var stringButFirst = function stringButFirst (a, n) {
     if(!n) {
         n = 1;
     }
 
-    var result = a.slice(n, n.length);
+    var result = a.slice(n, a.length);
     return result;
 };
 
-var stringLast = function (a, n) {
+var stringLast = function stringLast (a, n) {
     if(!n) {
         n = 1;
     }
@@ -111,7 +111,7 @@ var stringLast = function (a, n) {
     return result;
 };
 
-var stringButLast = function (a, n) {
+var stringButLast = function stringButLast (a, n) {
     if(!n) {
         n = 1;
     }
@@ -120,17 +120,17 @@ var stringButLast = function (a, n) {
     return result;
 };
 
-var stringAppend = function (a, b) {
+var stringAppend = function stringAppend (a, b) {
     var result = a + b;
     return result;
 };
 
-var stringLength = function (a) {
+var stringLength = function stringLength (a) {
     var result = a.length;
     return result;
 };
 
-var isStringEmpty = function (a) {
+var isStringEmpty = function isStringEmpty (a) {
     var result = a.length === 0;
     return result;
 };
@@ -144,12 +144,21 @@ var range = _.range;
 
 // core functions
 
-var iff = function (predicate, consequent, alternative) {
+var iff = function iff (predicate, consequent, alternative) {
     var environment = this;
-    return arr(environment, predicate) ? arr(environment, consequent) : arr(environment, alternative);
+    var newPredicate = arr(environment, predicate);
+    var result;
+
+    if (newPredicate) {
+        result = arr(environment, consequent);
+    } else {
+        result = arr(environment, alternative);
+    }
+
+    return result;
 };
 
-var cond = function () {
+var cond = function cond () {
     var environment = this;
     var resultClause = _.find(arguments, function(clause) {
         return arr(environment, clause[0]);
@@ -157,7 +166,7 @@ var cond = function () {
     return arr(environment, resultClause[1]);
 };
 
-var define = function () {
+var define = function define () {
     var environment = this;
     var name = _.first(arguments);
     var expression = _.last(arguments);
@@ -183,7 +192,7 @@ var define = function () {
     return environment[name];
 };
 
-var lambda = function (names, body) {
+var lambda = function lambda (names, body) {
     var environment = this;
 
     return function() {
@@ -199,7 +208,7 @@ var lambda = function (names, body) {
     };
 };
 
-var arr = function (environment, body) {
+var arr = function arr (environment, body) {
     var bodyMaybeVarName = typeof body == 'string';
     var bodyIsVarName = bodyMaybeVarName && environment.hasOwnProperty(body);
 
