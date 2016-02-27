@@ -729,6 +729,24 @@ describe("arr", function() {
       expect(environment.factorial(6)).toEqual(720);
     });
 
+    it("*works*", function () {
+
+      var environment = {};
+      var expression = [
+        [define, ['identity', 'n'],
+          ['identity2', 1, 'n']
+        ],
+        [define, ['identity2', 'a', 'n2'],
+          [add, 10, 'n2'],
+        ]
+      ];
+
+      var result = arr(environment, expression);
+      expect(result).toEqual(jasmine.any(Function));
+      expect(environment.identity(6)).toEqual(16);
+
+    });
+
     it("runs the iterative version", function () {
       var environment = {};
       var expression = [
